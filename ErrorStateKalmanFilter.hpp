@@ -30,6 +30,8 @@ namespace Filter
         using KalmanGain = Matrix<T, ErrorState::RowsAtCompileTime, Measurement::RowsAtCompileTime>;
         //! System model jacobian matrix type
         using SystemJacobian = Matrix<T, ErrorState::RowsAtCompileTime, ErrorState::RowsAtCompileTime>;
+        //! Control input jacobian matrix type
+        using ControlJacobian = Matrix<T, ErrorState::RowsAtCompileTime, ErrorState::RowsAtCompileTime>;
         //! Measurement model jacobian matrix type
         using MeasurementJacobian = Matrix<T, Measurement::RowsAtCompileTime, ErrorState::RowsAtCompileTime>;
         //! Error state
@@ -42,6 +44,8 @@ namespace Filter
         virtual NominalState correctNominalState(const NominalState &state, const ErrorState &x) = 0;
 
         virtual SystemJacobian updateSysJacobian(const NominalState &state, const ErrorState &x, const Control &u) = 0;
+
+        virtual ControlJacobian updateControlJacobian(const NominalState &state, const ErrorState &x, const Control &u) = 0;
 
         virtual SystemJacobian jacobianOfReset(const ErrorState &x) = 0;
 
@@ -60,7 +64,8 @@ namespace Filter
             // x = F * x;  // always zero, thus omitted
 
             // update error state covariance
-            cov = (F * cov * F.transpose() + F * systemNoiseCov * F.transpose()).eval(); // TODO: noise modeling
+            B = updateControlJacobian(nominalState, x, u);
+            cov = (F * cov + systemNoiseCov * F.transpose() + B * controlNoiseCov * B.transpose()).eval();
 
             return nominalState;
         }
@@ -78,7 +83,6 @@ namespace Filter
 
             // update error state covariance
             cov = (cov - K * H * cov).eval();
-            // std::cout<<"[Correct]: Error state covariance: \n"<<cov<<std::endl;
 
             // update nominal state
             nominalState = correctNominalState(nominalState, x);
@@ -96,10 +100,14 @@ namespace Filter
     private:
         //! System model jacobian
         SystemJacobian F;
+        //! Control jacobian
+        ControlJacobian B;
         //! Nominal state
         NominalState nominalState;
         //! System noise covariance
         noiseCov systemNoiseCov;
+        //! Control noise covariance
+        noiseCov controlNoiseCov;
         //! Measurement noise covariance
         measurmentCov measurementNoiseCov;
 
@@ -119,6 +127,12 @@ namespace Filter
         void setSystemNoiseCovariance(const noiseCov &cov)
         {
             systemNoiseCov = noiseCov(cov);
+            return;
+        }
+
+        void setControlNoiseCovariance(const noiseCov &cov)
+        {
+            controlNoiseCov = noiseCov(cov);
             return;
         }
 

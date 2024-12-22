@@ -36,9 +36,12 @@ namespace Filter
 
             SystemJacobian updateSysJacobian(const NominalState_t &state, const ErrorVec &x, const ControlVec &u) override
             {
-                SystemJacobian F = Matrix3d::Identity();
-                F = state.toRotationMatrix() * u(0);
-                return F;
+                return Matrix3d::Identity();
+            }
+
+            ControlJacobian updateControlJacobian(const NominalState_t &state, const ErrorVec &x, const ControlVec &u) override
+            {
+                return state.toRotationMatrix() * u(0);
             }
 
             SystemJacobian jacobianOfReset(const ErrorVec &x) override
@@ -60,6 +63,9 @@ namespace Filter
             {
                 MeasurementJacobian H = Matrix3d::Zero();
                 Vector3d gravity_inG = Vector3d(0, 0, 1);
+                // std::cout << "state " << state.w() << " " << state.x() << " " << state.y() << " " << state.z() << std::endl;
+                // std::cout << "rotation " << state.toRotationMatrix().transpose()(0, 0) << " " << state.toRotationMatrix().transpose()(1, 1) << " " << state.toRotationMatrix().transpose()(2, 2) << std::endl;
+                // std::cout << "skew " << skew(gravity_inG)(0,1) << " " << state.x() << " " << state.y() << " " << state.z() << std::endl;
                 H = state.toRotationMatrix().transpose() * skew(gravity_inG);
                 return H;
             }
@@ -75,9 +81,10 @@ namespace Filter
             void setImuParam(const Vector3d &noise, const double frequency = 200.0)
             {
                 this->frequency = frequency;
-                noiseCov sysNoiseCov = Matrix3d::Zero();
-                sysNoiseCov = noise.asDiagonal() * (double)(sqrt(frequency));
-                ErrorStateKalmanFilter::setSystemNoiseCovariance(sysNoiseCov);
+                noiseCov controlNoiseCov = Matrix3d::Zero();
+                controlNoiseCov = noise.asDiagonal() * (double)(sqrt(frequency));
+                ErrorStateKalmanFilter::setSystemNoiseCovariance(noiseCov::Zero());
+                ErrorStateKalmanFilter::setControlNoiseCovariance(controlNoiseCov);
             }
 
             /// @brief set measurement noise
