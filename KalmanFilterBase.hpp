@@ -5,11 +5,11 @@
 #ifndef FILTER_KALMANFILTERBASE_HPP_
 #define FILTER_KALMANFILTERBASE_HPP_
 
-#include <Eigen/Dense>
+#include <EmbeddedMath.hpp>
 
 namespace Filter
 {
-    using namespace Eigen;
+    using namespace EmbeddedMath;
 
     template <typename T, int N>
     using Covariance = Matrix<T, N, N>;
