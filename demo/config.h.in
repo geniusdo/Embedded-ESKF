@@ -1,0 +1,4 @@
+// config.h.in
+#pragma once
+
+#define IMU_FILE_PATH "@IMU_FILE_PATH@"
