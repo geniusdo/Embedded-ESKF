@@ -63,9 +63,6 @@ namespace Filter
             {
                 MeasurementJacobian H = Matrix3d::Zero();
                 Vector3d gravity_inG = Vector3d(0, 0, 1);
-                // std::cout << "state " << state.w() << " " << state.x() << " " << state.y() << " " << state.z() << std::endl;
-                // std::cout << "rotation " << state.toRotationMatrix().transpose()(0, 0) << " " << state.toRotationMatrix().transpose()(1, 1) << " " << state.toRotationMatrix().transpose()(2, 2) << std::endl;
-                // std::cout << "skew " << skew(gravity_inG)(0,1) << " " << state.x() << " " << state.y() << " " << state.z() << std::endl;
                 H = state.toRotationMatrix().transpose() * skew(gravity_inG);
                 return H;
             }

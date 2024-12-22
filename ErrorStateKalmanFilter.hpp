@@ -61,7 +61,7 @@ namespace Filter
             F = updateSysJacobian(nominalState, x, u);
 
             // update error state
-            // x = F * x;  // always zero, thus omitted
+            // x = F * x;  // always zero, omitted
 
             // update error state covariance
             B = updateControlJacobian(nominalState, x, u);
