@@ -82,7 +82,7 @@ namespace Filter
 
             // update error state
             x += K * (z - updateObservation(nominalState, x)); // linearize
-
+ 
             // update error state covariance
             cov = (cov - K * H * cov).eval();
 
@@ -90,8 +90,8 @@ namespace Filter
             nominalState = correctNominalState(nominalState, x);
 
             // reproject covariance
-            auto G = jacobianOfReset(x);
-            cov = (G * cov * G.transpose()).eval();
+            SystemJacobian G = jacobianOfReset(x);
+            cov = (G * cov * G.transpose()).eval(); //TODO: CHECK THIS
 
             // reset error state
             x.setZero();

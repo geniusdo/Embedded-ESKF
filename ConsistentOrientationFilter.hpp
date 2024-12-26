@@ -51,9 +51,8 @@ namespace Filter
 
             SystemJacobian jacobianOfReset(const ErrorVec &x) override
             {
-                SystemJacobian J = Matrix3d::Identity();
-                J = Matrix3d::Identity() + 0.5 * skew(Vector3d(x.head<3>()));
-                return J;
+                //! TODO: weird here, need to check 
+                return Matrix3d::Identity();
             }
 
             NominalState_t correctNominalState(const NominalState_t &state, const ErrorVec &x) override
