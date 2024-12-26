@@ -39,19 +39,48 @@ namespace Filter
         //! Error state covariance
         using ErrorStateBase::cov;
 
+        /// @brief Update the nominal state using the control input
+        /// @param state 
+        /// @param u 
+        /// @return NominalState
         virtual NominalState updateNominalState(const NominalState &state, const Control &u) = 0;
 
+        /// @brief Correct the nominal state using the error state estimated by the filter
+        /// @param state 
+        /// @param x 
+        /// @return NominalState
         virtual NominalState correctNominalState(const NominalState &state, const ErrorState &x) = 0;
 
+        /// @brief Update the transition matrix F based on system model
+        /// @param state 
+        /// @param x 
+        /// @param u 
+        /// @return SystemJacobian
         virtual SystemJacobian updateSysJacobian(const NominalState &state, const ErrorState &x, const Control &u) = 0;
 
+        /// @brief Update the observation function h(x) 
+        /// @param state 
+        /// @param x 
+        /// @return Measurement
         virtual Measurement updateObservation(const NominalState &state, const ErrorState &x) = 0;
 
+        /// @brief Update the Jacobian of the observation function h(x) to the error state, dh/dx
+        /// @param state 
+        /// @param x 
+        /// @return MeasurementJacobian
+        virtual MeasurementJacobian updateMeasJacobian(const NominalState &state, const ErrorState &x) = 0;
+
+        /// @brief update the control noise transition matrix
+        /// @param state 
+        /// @param x 
+        /// @param u 
+        /// @return ControlJacobian
         virtual ControlJacobian updateControlJacobian(const NominalState &state, const ErrorState &x, const Control &u) = 0;
 
+        /// @brief Update the jocobian of Reset function
+        /// @param x 
+        /// @return SystemJacobian
         virtual SystemJacobian jacobianOfReset(const ErrorState &x) = 0;
-
-        virtual MeasurementJacobian updateMeasJacobian(const NominalState &state, const ErrorState &x) = 0;
 
     public:
         const NominalState &predict(const Control &u)
@@ -82,7 +111,7 @@ namespace Filter
 
             // update error state
             x += K * (z - updateObservation(nominalState, x)); // linearize
- 
+
             // update error state covariance
             cov = (cov - K * H * cov).eval();
 
@@ -91,7 +120,7 @@ namespace Filter
 
             // reproject covariance
             SystemJacobian G = jacobianOfReset(x);
-            cov = (G * cov * G.transpose()).eval(); //TODO: CHECK THIS
+            cov = (G * cov * G.transpose()).eval(); // TODO: CHECK THIS
 
             // reset error state
             x.setZero();
