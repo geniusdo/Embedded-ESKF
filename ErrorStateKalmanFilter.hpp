@@ -45,6 +45,8 @@ namespace Filter
 
         virtual SystemJacobian updateSysJacobian(const NominalState &state, const ErrorState &x, const Control &u) = 0;
 
+        virtual Measurement updateObservation(const NominalState &state, const ErrorState &x) = 0;
+
         virtual ControlJacobian updateControlJacobian(const NominalState &state, const ErrorState &x, const Control &u) = 0;
 
         virtual SystemJacobian jacobianOfReset(const ErrorState &x) = 0;
@@ -79,7 +81,7 @@ namespace Filter
             KalmanGain K = (cov * H.transpose() * (H * cov * H.transpose() + measurementNoiseCov).inverse()).eval();
 
             // update error state
-            x += K * (z - H * x); // linearize
+            x += K * (z - updateObservation(nominalState, x)); // linearize
 
             // update error state covariance
             cov = (cov - K * H * cov).eval();

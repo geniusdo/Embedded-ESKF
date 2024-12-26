@@ -39,6 +39,11 @@ namespace Filter
                 return Matrix3d::Identity();
             }
 
+            MeasurementVec updateObservation(const NominalState_t &state, const ErrorVec &x) override
+            {
+                return state.toRotationMatrix().transpose() * Vector3d(0, 0, 1);
+            }
+
             ControlJacobian updateControlJacobian(const NominalState_t &state, const ErrorVec &x, const ControlVec &u) override
             {
                 return state.toRotationMatrix() * u(0);
@@ -47,14 +52,14 @@ namespace Filter
             SystemJacobian jacobianOfReset(const ErrorVec &x) override
             {
                 SystemJacobian J = Matrix3d::Identity();
-                J = Matrix3d::Identity() - 0.5 * skew(Vector3d(x.head<3>()));
+                J = Matrix3d::Identity() + 0.5 * skew(Vector3d(x.head<3>()));
                 return J;
             }
 
             NominalState_t correctNominalState(const NominalState_t &state, const ErrorVec &x) override
             {
                 NominalState_t corrected_state;
-                corrected_state = state * quat_Exp(Vector3d(x.head<3>()));
+                corrected_state = quat_Exp(Vector3d(x.head<3>())) * state;
                 corrected_state.normalize();
                 return corrected_state;
             }
